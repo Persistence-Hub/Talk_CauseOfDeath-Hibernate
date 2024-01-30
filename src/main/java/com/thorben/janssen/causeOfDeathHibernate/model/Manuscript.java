@@ -3,13 +3,13 @@ package com.thorben.janssen.causeOfDeathHibernate.model;
 import java.util.Arrays;
 import java.util.Objects;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 
 @Entity
 // @Cacheable

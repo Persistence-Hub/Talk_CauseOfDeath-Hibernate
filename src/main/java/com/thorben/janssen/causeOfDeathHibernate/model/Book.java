@@ -5,19 +5,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Version;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Version;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -38,15 +36,15 @@ public class Book {
 
 	@ManyToMany(cascade = CascadeType.ALL)
     // @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-	// private List<Author> authors = new ArrayList<Author>();
-	private Set<Author> authors = new HashSet<Author>();
+	private List<Author> authors = new ArrayList<Author>();
+	// private Set<Author> authors = new HashSet<Author>();
 
 	@OneToMany(mappedBy = "book"
 		// , fetch = FetchType.EAGER
 	)
 	// @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-	// private List<Review> reviews = new ArrayList<>();
-	private Set<Review> reviews = new HashSet<>();
+	private List<Review> reviews = new ArrayList<>();
+	// private Set<Review> reviews = new HashSet<>();
 
 	public Long getId() {
 		return this.id;
@@ -64,21 +62,21 @@ public class Book {
 		this.title = title;
 	}
 
-	// public List<Author> getAuthors() {
-	// 	return authors;
-	// }
-
-	// public void setAuthors(List<Author> authors) {
-	// 	this.authors = authors;
-	// }
-
-	public Set<Author> getAuthors() {
+	public List<Author> getAuthors() {
 		return authors;
 	}
 
-	public void setAuthors(Set<Author> authors) {
+	public void setAuthors(List<Author> authors) {
 		this.authors = authors;
 	}
+
+	// public Set<Author> getAuthors() {
+	// 	return authors;
+	// }
+
+	// public void setAuthors(Set<Author> authors) {
+	// 	this.authors = authors;
+	// }
 
 	public void addAuthor(Author a) {
 		this.authors.add(a);
@@ -90,21 +88,21 @@ public class Book {
 		a.getBooks().remove(this);
 	}
 
-	// public List<Review> getReviews() {
-	// 	return reviews;
-	// }
-
-	// public void setReviews(List<Review> reviews) {
-	// 	this.reviews = reviews;
-	// }
-
-	public Set<Review> getReviews() {
+	public List<Review> getReviews() {
 		return reviews;
 	}
 
-	public void setReviews(Set<Review> reviews) {
+	public void setReviews(List<Review> reviews) {
 		this.reviews = reviews;
 	}
+
+	// public Set<Review> getReviews() {
+	// 	return reviews;
+	// }
+
+	// public void setReviews(Set<Review> reviews) {
+	// 	this.reviews = reviews;
+	// }
 
 	@Override
 	public boolean equals(Object obj) {

@@ -3,34 +3,35 @@ package com.thorben.janssen.causeOfDeathHibernate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
+import org.hibernate.jpa.AvailableHints;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview;
 import com.thorben.janssen.causeOfDeathHibernate.model.Author;
 import com.thorben.janssen.causeOfDeathHibernate.model.Book;
 
-import org.apache.log4j.Logger;
-import org.hibernate.Hibernate;
-import org.hibernate.annotations.QueryHints;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.TypedQuery;
 
 public class TestExamples {
 
-	Logger log = Logger.getLogger(this.getClass().getName());
+	Logger log = LogManager.getLogger(this.getClass().getName());
 
 	private EntityManagerFactory emf;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		emf = Persistence.createEntityManagerFactory("my-persistence-unit");
 	}
 
-	@After
+	@AfterEach
 	public void close() {
 		emf.close();
 	}
@@ -41,11 +42,11 @@ public class TestExamples {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
 
-		// Author a = em.find(Author.class, 1L);
-		Author a = em.createQuery("SELECT a FROM Author a "
-				+ "LEFT JOIN FETCH a.books b "
-				+ "WHERE a.id = 1", Author.class)
-				.getSingleResult();
+		Author a = em.find(Author.class, 1L);
+		// Author a = em.createQuery("SELECT a FROM Author a "
+		// 		+ "LEFT JOIN FETCH a.books b "
+		// 		+ "WHERE a.id = 1", Author.class)
+		// 		.getSingleResult();
 
 		em.getTransaction().commit();
 		em.close();
@@ -110,7 +111,16 @@ public class TestExamples {
 		em.getTransaction().begin();
 
 		BookAuthorReview b = em.createQuery(
-				"SELECT new com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview(b.title, STRING_AGG(a.firstName || ' ' || a.lastName, ', '), count(r.id)) FROM Book b LEFT JOIN b.authors a LEFT JOIN b.reviews r WHERE b.id = 2 GROUP BY b.title",
+							"""
+							SELECT new com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview(
+												b.title, 
+												CAST(STRING_AGG(a.firstName || ' ' || a.lastName, ', ') as text), 
+												count(r.id)) 
+							FROM Book b 
+								LEFT JOIN b.authors a 
+								LEFT JOIN b.reviews r 
+							WHERE b.id = 2 
+							GROUP BY b.title""",
 				BookAuthorReview.class).getSingleResult();
 
 		em.getTransaction().commit();
@@ -120,25 +130,6 @@ public class TestExamples {
 				+ " reviews");
 
 	}
-
-	// @Test
-	// public void removeAuthor() {
-	// 	log.info("... removeAuthor ...");
-	// 	EntityManager em = emf.createEntityManager();
-	// 	em.getTransaction().begin();
-
-	// 	log.info("Before removing Author 1");
-	// 	logBooksOfAuthor2(em);
-
-	// 	Author a = em.find(Author.class, 1L);
-	// 	em.remove(a);
-
-	// 	log.info("After removing Author 1");
-	// 	logBooksOfAuthor2(em);
-
-	// 	em.getTransaction().commit();
-	// 	em.close();
-	// }
 
 	@Test
 	public void cacheBookWithAuthorsAndReviews() {
@@ -151,7 +142,7 @@ public class TestExamples {
 		TypedQuery<Book> q = em.createQuery(
 				"SELECT DISTINCT b FROM Book b LEFT JOIN FETCH b.authors a LEFT JOIN FETCH b.reviews r",
 				Book.class);
-		q.setHint(QueryHints.CACHEABLE, true);
+		q.setHint(AvailableHints.HINT_CACHEABLE, true);
 		List<Book> books = q.getResultList();
 
 		em.getTransaction().commit();
@@ -166,7 +157,7 @@ public class TestExamples {
 		q = em.createQuery(
 				"SELECT DISTINCT b FROM Book b LEFT JOIN FETCH b.authors a LEFT JOIN FETCH b.reviews r",
 				Book.class);
-		q.setHint(QueryHints.CACHEABLE, true);
+		q.setHint(AvailableHints.HINT_CACHEABLE, true);
 		books = q.getResultList();
 		log.info("Initialize associations");
 		for (Book b : books) {
@@ -195,9 +186,9 @@ public class TestExamples {
 		em.getTransaction().begin();
 
 		TypedQuery<BookAuthorReview> q = em.createQuery(
-				"SELECT new com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview(b.title, STRING_AGG(a.firstName || ' ' || a.lastName, ', '), count(r.id)) FROM Book b LEFT JOIN b.authors a LEFT JOIN b.reviews r GROUP BY b.title",
+				"SELECT new com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview(b.title, CAST(STRING_AGG(a.firstName || ' ' || a.lastName, ', ') as text), count(r.id)) FROM Book b LEFT JOIN b.authors a LEFT JOIN b.reviews r GROUP BY b.title",
 				BookAuthorReview.class);
-		q.setHint(QueryHints.CACHEABLE, true);
+		q.setHint(AvailableHints.HINT_CACHEABLE, true);
 		List<BookAuthorReview> books = q.getResultList();
 
 		em.getTransaction().commit();
@@ -208,9 +199,9 @@ public class TestExamples {
 		em.getTransaction().begin();
 
 		q = em.createQuery(
-				"SELECT new com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview(b.title, STRING_AGG(a.firstName || ' ' || a.lastName, ', '), count(r.id)) FROM Book b LEFT JOIN b.authors a LEFT JOIN b.reviews r GROUP BY b.title",
+				"SELECT new com.thorben.janssen.causeOfDeathHibernate.dto.BookAuthorReview(b.title, CAST(STRING_AGG(a.firstName || ' ' || a.lastName, ', ') as text), count(r.id)) FROM Book b LEFT JOIN b.authors a LEFT JOIN b.reviews r GROUP BY b.title",
 				BookAuthorReview.class);
-		q.setHint(QueryHints.CACHEABLE, true);
+		q.setHint(AvailableHints.HINT_CACHEABLE, true);
 		books = q.getResultList();
 
 		em.getTransaction().commit();
@@ -250,8 +241,8 @@ public class TestExamples {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
 
-		// List<Author> authors = em.createQuery("SELECT DISTINCT a FROM Author a LEFT JOIN FETCH a.books b WHERE b.id = 2", Author.class).getResultList();
-		List<Author> authors = em.createQuery("SELECT DISTINCT a FROM Author a LEFT JOIN a.books b LEFT JOIN FETCH a.books WHERE b.id = 2", Author.class).getResultList();
+		List<Author> authors = em.createQuery("SELECT DISTINCT a FROM Author a LEFT JOIN FETCH a.books b WHERE b.id = 2", Author.class).getResultList();
+		// List<Author> authors = em.createQuery("SELECT DISTINCT a FROM Author a LEFT JOIN a.books b LEFT JOIN FETCH a.books WHERE b.id = 2", Author.class).getResultList();
 
 		em.getTransaction().commit();
 		em.close();
@@ -294,9 +285,9 @@ public class TestExamples {
 		Author a = em.find(Author.class, 1L);
 		Book b = em.find(Book.class, 1L);
 
-        // a.getBooks().remove(b);
+        a.getBooks().remove(b);
 		// b.getAuthors().remove(a);
-		b.removeAuthor(a);
+		// b.removeAuthor(a);
 
 		log.info("Author "+a.getFirstName()+" "+a.getLastName()+" wrote "+
 			a.getBooks().stream().map(book -> book.getTitle()).collect(Collectors.joining(", ")));
